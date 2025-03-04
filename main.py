@@ -8,10 +8,10 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 
-# VGG16モデルの定義
-class VGG16(nn.Module):
+# VGG11モデルの定義
+class VGG11(nn.Module):
     def __init__(self, num_classes=10):
-        super(VGG16, self).__init__()
+        super(VGG11, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, padding=1), nn.ReLU(inplace=True),
             nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.ReLU(inplace=True),
@@ -23,22 +23,15 @@ class VGG16(nn.Module):
 
             nn.Conv2d(128, 256, kernel_size=3, padding=1), nn.ReLU(inplace=True),
             nn.Conv2d(256, 256, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1), nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
 
             nn.Conv2d(256, 512, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-
-            nn.Conv2d(512, 512, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1), nn.ReLU(inplace=True),
             nn.Conv2d(512, 512, kernel_size=3, padding=1), nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(512, 4096), nn.ReLU(inplace=True), nn.Dropout(),
+            nn.Linear(512 * 2 * 2, 4096), nn.ReLU(inplace=True), nn.Dropout(),
             nn.Linear(4096, 4096), nn.ReLU(inplace=True), nn.Dropout(),
             nn.Linear(4096, num_classes)
         )
@@ -53,8 +46,8 @@ class VGG16(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # モデルのロード
-model = VGG16(num_classes=10).to(device)
-model.load_state_dict(torch.load("vgg16_scratch_cifar10.pth", map_location=device))
+model = VGG11(num_classes=10).to(device)
+model.load_state_dict(torch.load("vgg11_scratch_cifar10.pth", map_location=device))
 model.eval()
 
 # 入力画像の前処理
@@ -77,7 +70,7 @@ def predict_image(image):
     return predicted.item()
 
 # Streamlit UI
-st.title("VGG16 Image Classification")
+st.title("VGG11 Image Classification")
 st.write("Upload an image to classify it into one of the CIFAR-10 classes.")
 
 uploaded_image = st.file_uploader("Choose an image...", type="jpg")
